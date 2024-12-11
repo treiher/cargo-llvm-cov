@@ -686,4 +686,24 @@ mod tests {
         // 2) only the last function with missing lines were reported, so 15 and 17 was missing.
         assert_eq!(uncovered_lines, expected);
     }
+
+    #[test]
+    fn test_get_uncovered_lines_multi_derive() {
+        // Given a coverage report which includes a line with multiple derive macros and only one
+        // of them is covered:
+        let file = format!(
+            "{}/tests/fixtures/show-missing-lines-multi-derive.json",
+            env!("CARGO_MANIFEST_DIR")
+        );
+        let s = fs::read_to_string(file).unwrap();
+        let json = serde_json::from_str::<LlvmCovJsonExport>(&s).unwrap();
+
+        let ignore_filename_regex = None;
+        let uncovered_lines = json.get_uncovered_lines(ignore_filename_regex);
+
+        let expected: UncoveredLines =
+            vec![("src/lib.rs".to_owned(), vec![3])].into_iter().collect();
+
+        assert_eq!(uncovered_lines, expected);
+    }
 }
